@@ -1,0 +1,123 @@
+[
+    {
+        "height": 2400,
+        "width": 1080,
+        "pixel_density": 428,
+        "model": "Pixel 8",
+        "brand": "google",
+        "build_device": "shiba",
+        "os_version": "15-AP1A.240505.005",
+        "cpu_cores": 8,
+        "sdk_int": 35
+    },
+    {
+        "height": 3120,
+        "width": 1440,
+        "pixel_density": 501,
+        "model": "SM-S928B",
+        "brand": "samsung",
+        "build_device": "gts8uq",
+        "os_version": "15-UP1A.231005.007.S928BXXU1AXCB",
+        "cpu_cores": 8,
+        "sdk_int": 35
+    },
+    {
+        "height": 3168,
+        "width": 1440,
+        "pixel_density": 510,
+        "model": "CPH2573",
+        "brand": "oneplus",
+        "build_device": "pandan",
+        "os_version": "15-UKQ1.230804.001",
+        "cpu_cores": 8,
+        "sdk_int": 35
+    },
+    {
+        "height": 2412,
+        "width": 1080,
+        "pixel_density": 394,
+        "model": "A065",
+        "brand": "nothing",
+        "build_device": "spacewar",
+        "os_version": "15-TKQ1.221013.002",
+        "cpu_cores": 8,
+        "sdk_int": 35
+    },
+    {
+        "height": 2488,
+        "width": 1116,
+        "pixel_density": 395,
+        "model": "AI2401_A",
+        "brand": "asus",
+        "build_device": "AI2401",
+        "os_version": "15-UP1A.231005.007.33.0820.0820.172",
+        "cpu_cores": 8,
+        "sdk_int": 35
+    },
+    {
+        "height": 2780,
+        "width": 1264,
+        "pixel_density": 450,
+        "model": "RMX3851",
+        "brand": "realme",
+        "build_device": "mandrill",
+        "os_version": "15-UP1A.231005.007",
+        "cpu_cores": 8,
+        "sdk_int": 35
+    },
+    {
+        "height": 2400,
+        "width": 1080,
+        "pixel_density": 402,
+        "model": "XT2307-1",
+        "brand": "motorola",
+        "build_device": "manaus",
+        "os_version": "15-UP1A.231005.007",
+        "cpu_cores": 8,
+        "sdk_int": 35
+    },
+    {
+        "height": 2712,
+        "width": 1220,
+        "pixel_density": 446,
+        "model": "2306EPN60G",
+        "brand": "xiaomi",
+        "build_device": "aristotle",
+        "os_version": "15-UP1A.231005.007",
+        "cpu_cores": 8,
+        "sdk_int": 35
+    },
+    {
+        "height": 2664,
+        "width": 1200,
+        "pixel_density": 435,
+        "model": "REA-NX9",
+        "brand": "honor",
+        "build_device": "reehan",
+        "os_version": "15-UP1A.231005.007",
+        "cpu_cores": 8,
+        "sdk_int": 35
+    },
+    {
+        "height": 2412,
+        "width": 1080,
+        "pixel_density": 394,
+        "model": "CPH2521",
+        "brand": "oppo",
+        "build_device": "PHU110",
+        "os_version": "15-UP1A.231005.007",
+        "cpu_cores": 8,
+        "sdk_int": 35
+    },
+    {
+        "height": 3200,
+        "width": 1440,
+        "pixel_density": 515,
+        "model": "Pixel 8 Pro",
+        "brand": "google",
+        "build_device": "husky",
+        "os_version": "15-UP1A.231005.007.100345",
+        "cpu_cores": 8,
+        "sdk_int": 35
+    }    
+]
