@@ -6,10 +6,17 @@ import orjson
 from typeguard import typechecked
 from . import config
 from .px import PXSolver
-from .types import Location, Airport, CabinClass, SpecialTypes, SkyscannerResponse, Coordinates
+from .types import (
+    Location,
+    Airport,
+    CabinClass,
+    SpecialTypes,
+    SkyscannerResponse,
+    Coordinates,
+)
 from .errors import AttemptsExhaustedIncompleteResponse, BannedWithCaptcha, GenericError
 
-#TODO aggiungere scraping da qualsiasi (tipo Milano)
+# TODO aggiungere scraping da qualsiasi (tipo Milano)
 class SkyScanner:
     """
     A client for interacting with the Skyscanner flight and car rental APIs.
@@ -27,9 +34,9 @@ class SkyScanner:
         market: str = "US",
         retry_delay: int = 2,
         max_retries: int = 15,
-        proxy: str = '',
+        proxy: str = "",
         px_authorization: str | None = None,
-        verify : bool = True
+        verify: bool = True,
     ):
         """
         Initialize the SkyScanner client.
@@ -48,9 +55,9 @@ class SkyScanner:
             None
         """
         if not px_authorization:
-            solver = PXSolver(proxy=proxy,verify=verify)
+            solver = PXSolver(proxy=proxy, verify=verify)
             px_authorization, UUID = solver.gen_px_authorization()
-        
+
         headers = {
             "X-Skyscanner-ChannelId": "goandroid",
             "X-Skyscanner-Currency": currency,
@@ -64,7 +71,7 @@ class SkyScanner:
             "X-Px-Authorization": px_authorization,
             "X-PX-Os": "Android",
             "X-Px-Uuid": UUID,
-            "X-Px-Mobile-Sdk-Version": "3.4.",
+            "X-Px-Mobile-Sdk-Version": "3.4.4",
         }
         self.retry_delay = retry_delay
         self.market = market
@@ -77,8 +84,9 @@ class SkyScanner:
             extra_fp=config.EXTRA_FP,
             akamai=config.AKAMAI,
             proxy=proxy,
-            verify=verify
+            verify=verify,
         )
+
     @typechecked
     def get_flight_prices(
         self,
@@ -144,7 +152,7 @@ class SkyScanner:
             "legs": [
                 self.__gen_leg(depart_date, origin=origin, destination=destination),
             ],
-            "options": None
+            "options": None,
         }
 
         if return_date:
@@ -156,13 +164,16 @@ class SkyScanner:
         custom_headers = {
             "X-Skyscanner-Viewid": str(uuid.uuid4()),
             "Content-Type": "application/json; charset=UTF-8",
-            "Accept-Encoding": "gzip, deflate, br"
+            "Accept-Encoding": "gzip, deflate, br",
         }
-        req = self.session.post(config.UNIFIED_SEARCH_ENDPOINT, json=json_data, headers=custom_headers)
+        req = self.session.post(
+            config.UNIFIED_SEARCH_ENDPOINT, json=json_data, headers=custom_headers
+        )
         if req.status_code == 403:
-            raise BannedWithCaptcha(req.json()['url'])
+            raise BannedWithCaptcha(
+                "https://www.skyscanner.net" + req.json()["redirect_to"]
+            )
         data = orjson.loads(req.content)
-
 
         if data["context"]["status"] == "complete":
             return SkyscannerResponse(
@@ -199,9 +210,11 @@ class SkyScanner:
             retries += 1
 
         raise AttemptsExhaustedIncompleteResponse()
-    
+
     @typechecked
-    def search_airports(self, query: str, depart_date=None, return_date=None) -> list[Airport]:
+    def search_airports(
+        self, query: str, depart_date=None, return_date=None
+    ) -> list[Airport]:
         """
         Auto-suggest airports based on a query string.
 
@@ -226,10 +239,14 @@ class SkyScanner:
             },
         )
         if req.status_code == 403:
-            raise BannedWithCaptcha("https://www.skyscanner.net" + req.json()['redirect_to'])
+            raise BannedWithCaptcha(
+                "https://www.skyscanner.net" + req.json()["redirect_to"]
+            )
 
         if req.status_code != 200:
-            raise GenericError(f"Error when scraping airports, code: {req.status_code} text: {req.text}")
+            raise GenericError(
+                f"Error when scraping airports, code: {req.status_code} text: {req.text}"
+            )
 
         data = req.json()
         return [
@@ -256,18 +273,29 @@ class SkyScanner:
             BannedWithCaptcha: If API responds with a CAPTCHA ban (403).
             GenericError: For non-200 status codes.
         """
-        url = config.LOCATION_SEARCH_ENDPOINT.format(locale=self.locale,market=self.market) + query
+        url = (
+            config.LOCATION_SEARCH_ENDPOINT.format(
+                locale=self.locale, market=self.market
+            )
+            + query
+        )
         params = {"autosuggestExp": "neighborhood_b"}
 
         req = self.session.get(url, params=params)
         if req.status_code == 403:
-            raise BannedWithCaptcha("https://www.skyscanner.net" + req.json()['redirect_to'])
+            raise BannedWithCaptcha(
+                "https://www.skyscanner.net" + req.json()["redirect_to"]
+            )
 
         if req.status_code != 200:
-            raise GenericError(f"Error when scraping airports, code: {req.status_code} text: {req.text}")
+            raise GenericError(
+                f"Error when scraping airports, code: {req.status_code} text: {req.text}"
+            )
 
         return [
-            Location(location['entity_name'], location['entity_id'], location['location'])
+            Location(
+                location["entity_name"], location["entity_id"], location["location"]
+            )
             for location in req.json()
         ]
 
@@ -290,9 +318,11 @@ class SkyScanner:
             if airport.skyId == airport_code:
                 return airport
         raise GenericError(f"IATA code not found: {airport_code}")
-    
+
     @typechecked
-    def get_itinerary_details(self, itineraryId: str, response: SkyscannerResponse) -> dict:
+    def get_itinerary_details(
+        self, itineraryId: str, response: SkyscannerResponse
+    ) -> dict:
         """
         Retrieve detailed information for a specific flight itinerary.
 
@@ -328,47 +358,55 @@ class SkyScanner:
             },
             "searchRequestDetails": {
                 "adults": response.search_payload["adults"],
-
                 "cabinClass": response.search_payload["cabinClass"],
                 "legs": [],
             },
             "options": {
-                "totalCostOptions": { 
-                    "fareAttributeFilters": ["ATTRIBUTE_CABIN_BAGGAGE", "ATTRIBUTE_CHECKED_BAGGAGE"] 
+                "totalCostOptions": {
+                    "fareAttributeFilters": [
+                        "ATTRIBUTE_CABIN_BAGGAGE",
+                        "ATTRIBUTE_CHECKED_BAGGAGE",
+                    ]
                 }
-            }
+            },
         }
         if response.search_payload["childAges"]:
-            json_data["searchRequestDetails"]['childAges'] = response.search_payload["childAges"]
+            json_data["searchRequestDetails"]["childAges"] = response.search_payload[
+                "childAges"
+            ]
         for leg in response.search_payload["legs"]:
-            originId = leg.get("legOrigin", leg)['entityId']
-            destinationId = leg.get("legDestination", leg)['entityId']
+            originId = leg.get("legOrigin", leg)["entityId"]
+            destinationId = leg.get("legDestination", leg)["entityId"]
             originIata = (
-                    response.origin.skyId # suf
-                    if response.origin.entity_id == originId
-                    else response.destination.skyId
-                )
+                response.origin.skyId  # suf
+                if response.origin.entity_id == originId
+                else response.destination.skyId
+            )
             destinationIata = (
-                    response.destination.skyId
-                    if response.destination.entity_id == destinationId
-                    else response.origin.skyId
-                )
+                response.destination.skyId
+                if response.destination.entity_id == destinationId
+                else response.origin.skyId
+            )
             date = leg["dates"]
             res = {
-                "originIata":originIata ,
-                "destinationIata":destinationIata ,
-                "date": {"year": date["year"], "month": date["month"], "day": date["day"]},
+                "originIata": originIata,
+                "destinationIata": destinationIata,
+                "date": {
+                    "year": date["year"],
+                    "month": date["month"],
+                    "day": date["day"],
+                },
                 "addAlternativeOrigins": False,
                 "addAlternativeDestinations": False,
                 "originSkyscannerCode": originIata,
                 "destinationSkyscannerCode": destinationIata,
                 "originEntityId": "",
-                "destinationEntityId": ""
+                "destinationEntityId": "",
             }
             json_data["searchRequestDetails"]["legs"].append(res)
         headers = {
-            "grpc-metadata-x-skyscanner-devicedetection-istablet": "false", # required 
-            "grpc-metadata-x-skyscanner-devicedetection-ismobile": "true", # required
+            "grpc-metadata-x-skyscanner-devicedetection-istablet": "false",  # required
+            "grpc-metadata-x-skyscanner-devicedetection-ismobile": "true",  # required
             "grpc-metadata-x-skyscanner-channelid": "goandroid",
             "grpc-metadata-x-skyscanner-viewid": str(uuid.uuid4()),
             "grpc-metadata-x-skyscanner-clientid": "skyscanner_app",
@@ -379,21 +417,27 @@ class SkyScanner:
             "content-type": "application/json; charset=utf-8",
             "accept-encoding": "gzip",
         }
-        req = self.session.post(config.ITINERARY_DETAILS_ENDPOINT, json=json_data, headers=headers)
+        req = self.session.post(
+            config.ITINERARY_DETAILS_ENDPOINT, json=json_data, headers=headers
+        )
         if req.status_code == 403:
-            raise BannedWithCaptcha("https://www.skyscanner.net" + req.json().get('redirect_to', ''))
+            raise BannedWithCaptcha(
+                "https://www.skyscanner.net" + req.json()["redirect_to"]
+            )
         if req.status_code != 200:
-            raise GenericError(f"Error fetching itinerary details, code: {req.status_code}, text: {req.text}")
+            raise GenericError(
+                f"Error fetching itinerary details, code: {req.status_code}, text: {req.text}"
+            )
 
         return orjson.loads(req.content)
-    
+
     @typechecked
-    def get_car_rental_from_url(self, url : str):
+    def get_car_rental_from_url(self, url: str):
         """
         Parses a car rental booking URL and returns car rental options based on the extracted parameters.
 
-        The method extracts information such as driver's age, origin and destination location IDs, 
-        departure and return times from a structured Skyscanner-style URL. It then uses these parameters 
+        The method extracts information such as driver's age, origin and destination location IDs,
+        departure and return times from a structured Skyscanner-style URL. It then uses these parameters
         to fetch car rental data via `self.get_car_rental`.
 
         Example URL:
@@ -408,28 +452,28 @@ class SkyScanner:
         Raises:
             ValueError: If the date format is invalid or required segments are missing from the URL.
         """
-            
+
         url = url.split("?")[0]
 
         args = url.split("/")
-        
+
         if len(args) < 14:
             raise ValueError("URL not valid")
 
         is_driver_over_25 = int(args[8]) >= 25
 
-        origin = Location("",args[9],"")
-        destination = Location("",args[10],"")
+        origin = Location("", args[9], "")
+        destination = Location("", args[10], "")
 
         depart_time = datetime.datetime.fromisoformat(args[11])
         return_time = datetime.datetime.fromisoformat(args[12])
-        print(origin,destination,depart_time,return_time,is_driver_over_25)
+
         return self.get_car_rental(
             origin=origin,
             depart_time=depart_time,
             return_time=return_time,
             is_driver_over_25=is_driver_over_25,
-            destination=destination
+            destination=destination,
         )
 
     @typechecked
@@ -439,7 +483,7 @@ class SkyScanner:
         depart_time: datetime.datetime,
         return_time: datetime.datetime,
         destination: Location | Coordinates | Airport | None = None,
-        is_driver_over_25: bool = True
+        is_driver_over_25: bool = True,
     ) -> dict:
         """
         Search for car rental options between two locations and times.
@@ -468,10 +512,18 @@ class SkyScanner:
         if return_time < now or depart_time < now:
             raise ValueError("Return or depart time cannot be in the past")
 
-        first_location = origin.entity_id if not isinstance(origin, Coordinates) else f"{origin.latitude},{origin.longitude}"
-        second_location = destination.entity_id if not isinstance(destination, Coordinates) else f"{destination.latitude},{destination.longitude}"
+        first_location = (
+            origin.entity_id
+            if not isinstance(origin, Coordinates)
+            else f"{origin.latitude},{origin.longitude}"
+        )
+        second_location = (
+            destination.entity_id
+            if not isinstance(destination, Coordinates)
+            else f"{destination.latitude},{destination.longitude}"
+        )
 
-        age_value = '30' if is_driver_over_25 else '21'
+        age_value = "30" if is_driver_over_25 else "21"
 
         first_date = depart_time.strftime("%Y-%m-%dT%H:%M")
         second_date = return_time.strftime("%Y-%m-%dT%H:%M")
@@ -488,15 +540,15 @@ class SkyScanner:
         )
 
         params = {
-            'group': 'true',
-            'sipp_map': 'true',
-            'channel': 'android',
-            'vndr_img_rounded': 'true',
-            'ranking_enable': 'false',
-            'reqn': '0',
-            'version': '6.9',
-            'include_location': 'true',
-            'city_search_enable': 'true',
+            "group": "true",
+            "sipp_map": "true",
+            "channel": "android",
+            "vndr_img_rounded": "true",
+            "ranking_enable": "false",
+            "reqn": "0",
+            "version": "6.9",
+            "include_location": "true",
+            "city_search_enable": "true",
         }
 
         last_count = None
@@ -504,9 +556,9 @@ class SkyScanner:
         for _ in range(self.max_retries):
             req = self.session.get(url, params=params)
             req_data = req.json()
-            params['reqn'] = str(int(params['reqn']) + 1)
+            params["reqn"] = str(int(params["reqn"]) + 1)
 
-            count = req_data['groups_count']
+            count = req_data["groups_count"]
             if not last_count:
                 last_count = count
                 time.sleep(self.retry_delay)
@@ -539,7 +591,7 @@ class SkyScanner:
         depart_date: datetime.datetime | SpecialTypes | None = None,
         return_date: datetime.datetime | SpecialTypes | None = None,
         origin: Airport | SpecialTypes | None = None,
-        destination: Airport | SpecialTypes | None = None
+        destination: Airport | SpecialTypes | None = None,
     ) -> dict:
         """
         Construct a search leg dictionary for Skyscanner API requests.
@@ -571,6 +623,8 @@ class SkyScanner:
             else {"@type": destination}
         )
         res["placeOfStay"] = (
-            destination.entity_id if isinstance(destination, Airport) else origin.entity_id
+            destination.entity_id
+            if isinstance(destination, Airport)
+            else origin.entity_id
         )
         return res

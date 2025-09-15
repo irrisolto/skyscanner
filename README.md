@@ -352,6 +352,12 @@ rentals = scanner.get_car_rental(
 
 - `curl_cffi`: HTTP client with browser fingerprinting
 - `typeguard`: Runtime type checking
-- `datetime`: Date/time handling
-- `time`: Sleep functionality for retries
-- `uuid`: Unique identifier generation
+- `orjson`: Fast JSON parsing
+
+
+## TODO
+
+- [ ] Add scraping flight prices from generic cities and not specific airports (like Milan and not MXP)
+- [ ] Add async version
+- [ ] Type better the flight price response to not always parse json
+- [ ] Add method to build skyscanner buy link statically without requesting details
