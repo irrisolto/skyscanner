@@ -1,7 +1,6 @@
 # SkyScanner API Client Documentation
 
-A Python client library for interacting with the Skyscanner flight and car rental APIs. This library provides a comprehensive interface for searching flights, airports, locations, and car rentals with built-in retry logic and error handling.
-
+A Python library for querying the reverse-engineered SkyScanner Android app API for flights, airports, locations, and car rentals, with built-in retries and error handling.
 ## Table of Contents
 
 - [Installation](#installation)
