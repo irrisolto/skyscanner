@@ -182,6 +182,9 @@ class PXSolver:
         """
         PX326 = str(uuid.uuid4())
         PX327 = PX326.split("-")[0].upper()
+        battery_percentage = random.randrange(15,90)
+        conn_type = random.choice(["WiFi","Mobile"])
+        battery_status = random.choice(["charging","discharging","not charging"])
 
         fingeprint = [
             {
@@ -191,7 +194,7 @@ class PXSolver:
                     "PX1214": secrets.token_hex(8),
                     "PX91": fingerprint['height'],
                     "PX92": fingerprint['width'],
-                    "PX21215": fingerprint['pixel_density'], 
+                    "PX21215": random.randrange(150,255), 
                     "PX316": True,
                     "PX318": str(fingerprint['sdk_int']),
                     "PX319": fingerprint['os_version'],
@@ -213,17 +216,17 @@ class PXSolver:
                     "PX21217": "[]",
                     "PX21224": "true",
                     "PX21221": "true",
-                    "PX317": "WiFi",
+                    "PX317": conn_type,
                     "PX344": "Android",
                     "PX347": '["en_US"]',
                     "PX343": "Unknown",
-                    "PX415": 100,
+                    "PX415": battery_percentage,
                     "PX413": "unknown",
-                    "PX416": "AC",
-                    "PX414": "full",
+                    "PX416": "" if battery_status != "charging" else random.choice(["USB","Wireless"]),
+                    "PX414": battery_status,
                     "PX419": "",
-                    "PX418": 0,
-                    "PX420": 0,
+                    "PX418": round(random.uniform(25.0, 35.0), 1),
+                    "PX420": self.battery_percentage_to_voltage(battery_percentage),
                     "PX340": "v3.4.4",
                     "PX342": "7.146",
                     "PX341": '"Skyscanner"',
@@ -305,3 +308,16 @@ class PXSolver:
         args = data[0].split("|")
 
         return f"3:{args[3]}", UUID
+
+    @staticmethod
+    def battery_percentage_to_voltage(percentage: float) -> float:
+        if percentage < 0 or percentage > 100:
+            raise ValueError("Percentage must be between 0 and 100.")
+        if percentage <= 10:
+            voltage = 3.0 + (percentage / 10) * 0.3   
+        elif percentage <= 70:
+            voltage = 3.3 + ((percentage - 10) / 60) * 0.6  
+        else:
+            voltage = 3.9 + ((percentage - 70) / 30) * 0.3 
+
+        return round(voltage, 2)
